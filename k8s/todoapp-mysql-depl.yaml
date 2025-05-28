@@ -1,3 +1,5 @@
+---
+# MySQL ConfigMap
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -5,34 +7,6 @@ metadata:
 data:
   init.sql: |
     CREATE DATABASE IF NOT EXISTS authdb;
-
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: todoapp-mysql-pv
-  labels:
-    type: local
-spec:
-  storageClassName: manual
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: "/data/mysql"
-
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: todoapp-mysql-pv-claim
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
 
 ---
 apiVersion: apps/v1
@@ -62,15 +36,13 @@ spec:
           volumeMounts:
             - name: mysql-persistent-storage
               mountPath: /var/lib/mysql
-
             - name: mysql-initdb
               mountPath: /docker-entrypoint-initdb.d
-
       volumes:
         - name: mysql-persistent-storage
-          persistentVolumeClaim:
-            claimName: todoapp-mysql-pv-claim
-
+          hostPath:
+            path: /tmp/k8s-mysql-data
+            type: DirectoryOrCreate
         - name: mysql-initdb
           configMap:
             name: mysql-initdb-config
