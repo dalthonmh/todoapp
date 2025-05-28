@@ -1,0 +1,35 @@
+apiVersion: skaffold/v3alpha1
+kind: Config
+build:
+  artifacts:
+    - image: dalthonmh/todoapp-auth
+      context: auth
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "**/*.go"
+            dest: .
+
+    - image: dalthonmh/todoapp-core
+      context: core
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "src/**/*.js"
+            dest: .
+
+    - image: dalthonmh/todoapp-web
+      context: web
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        infer:
+          - "**/*.js"
+          - "**/*.vue"
+          - "**/*.jsx"
+          - "**/*.css"
+
+deploy:
+  kubectl:
