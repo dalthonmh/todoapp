@@ -1,0 +1,50 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-service
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+    cert-manager.io/acme-challenge-type: http01
+
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: postulaunjbg.lat
+      http:
+        paths:
+          - path: /api/auth/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: todoapp-auth-srv
+                port:
+                  number: 8080
+
+          - path: /api/tasks/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: todoapp-core-srv
+                port:
+                  number: 3000
+
+          # Ruta /* debe ir al final
+          - path: /?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: todoapp-web-srv
+                port:
+                  number: 5173
+
+  tls:
+    - hosts:
+        - postulaunjbg.lat
+
+      secretName: letsencrypt-prod
