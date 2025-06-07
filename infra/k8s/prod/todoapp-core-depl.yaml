@@ -15,7 +15,7 @@ spec:
       containers:
         - name: todoapp-core
           image: dalthonmh/todoapp-core
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           env:
             - name: MONGODB_URI
               value: "mongodb://todoapp-mongo-srv:27017/todoapp-core"

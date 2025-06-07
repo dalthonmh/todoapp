@@ -8,7 +8,7 @@ spec:
   resources:
     requests:
       storage: 5Gi
-  # storageClassName: standard
+  storageClassName: longhorn
 
 ---
 apiVersion: apps/v1
