@@ -40,7 +40,6 @@ spec:
                 name: todoapp-web-srv
                 port:
                   number: 80
-
   tls:
     - hosts:
         - postulaunjbg.lat
