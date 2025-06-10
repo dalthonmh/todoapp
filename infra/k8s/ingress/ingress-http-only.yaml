@@ -3,14 +3,10 @@ kind: Ingress
 metadata:
   name: ingress-service
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-    cert-manager.io/acme-challenge-type: http01
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
-    nginx.ingress.kubernetes.io/service-upstream: "true"
-
 spec:
   ingressClassName: nginx
   rules:
@@ -24,7 +20,6 @@ spec:
                 name: todoapp-auth-srv
                 port:
                   number: 8080
-
           - path: /api/tasks/
             pathType: Prefix
             backend:
@@ -32,7 +27,6 @@ spec:
                 name: todoapp-core-srv
                 port:
                   number: 3000
-
           - path: /
             pathType: Prefix
             backend:
