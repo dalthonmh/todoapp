@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod-node1
+  labels:
+    app: nginx-test
+    node: node1
+spec:
+  nodeSelector:
+    kubernetes.io/hostname: postulaunjbg.lat
+  containers:
+    - name: nginx
+      image: nginx:alpine
+      ports:
+        - containerPort: 80
+      env:
+        - name: NODE_NAME
+          value: "postulaunjbg.lat"
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod-node2
+  labels:
+    app: nginx-test
+    node: node2
+spec:
+  nodeSelector:
+    kubernetes.io/hostname: worker-2
+  containers:
+    - name: nginx
+      image: nginx:alpine
+      ports:
+        - containerPort: 80
+      env:
+        - name: NODE_NAME
+          value: "worker-2"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service-node1
+spec:
+  selector:
+    app: nginx-test
+    node: node1
+  ports:
+    - port: 80
+      targetPort: 80
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service-node2
+spec:
+  selector:
+    app: nginx-test
+    node: node2
+  ports:
+    - port: 80
+      targetPort: 80
+  type: ClusterIP
