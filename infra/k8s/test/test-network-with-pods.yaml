@@ -7,7 +7,7 @@ metadata:
     node: node1
 spec:
   nodeSelector:
-    kubernetes.io/hostname: postulaunjbg.lat
+    kubernetes.io/hostname: spacex
   containers:
     - name: nginx
       image: nginx:alpine
@@ -15,7 +15,7 @@ spec:
         - containerPort: 80
       env:
         - name: NODE_NAME
-          value: "postulaunjbg.lat"
+          value: "spacex"
 
 ---
 apiVersion: v1
@@ -27,7 +27,7 @@ metadata:
     node: node2
 spec:
   nodeSelector:
-    kubernetes.io/hostname: worker-2
+    kubernetes.io/hostname: falcon9
   containers:
     - name: nginx
       image: nginx:alpine
@@ -35,7 +35,7 @@ spec:
         - containerPort: 80
       env:
         - name: NODE_NAME
-          value: "worker-2"
+          value: "falcon9"
 
 ---
 apiVersion: v1
