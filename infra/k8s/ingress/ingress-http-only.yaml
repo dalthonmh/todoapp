@@ -13,20 +13,22 @@ spec:
     - host: postulaunjbg.lat
       http:
         paths:
-          - path: /api/auth/
-            pathType: Prefix
-            backend:
-              service:
-                name: todoapp-auth-srv
-                port:
-                  number: 8080
-          - path: /api/tasks/
-            pathType: Prefix
-            backend:
-              service:
-                name: todoapp-core-srv
-                port:
-                  number: 3000
+          # - path: /api/auth/
+          #   pathType: Prefix
+          #   backend:
+          #     service:
+          #       name: todoapp-auth-srv
+          #       port:
+          #         number: 8080
+
+          # - path: /api/tasks/
+          #   pathType: Prefix
+          #   backend:
+          #     service:
+          #       name: todoapp-core-srv
+          #       port:
+          #         number: 3000
+
           - path: /
             pathType: Prefix
             backend:
