@@ -4,8 +4,16 @@ metadata:
   name: ingress-service-temp
   annotations:
     nginx.ingress.kubernetes.io/use-regex: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - postulaunjbg.lat
+      secretName: postulaunjbg-tls
   rules:
     - host: postulaunjbg.lat
       http:
