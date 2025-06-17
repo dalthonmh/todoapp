@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-easy
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: postulaunjbg.lat
+      http:
+        paths:
+          - path: /\.well-known/acme-challenge/.*
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: acme-challenge
+                port:
+                  number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: todoapp-web-srv
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - postulaunjbg.lat
+      secretName: test-tls
+# certbot certonly --manual --preferred-challenges http -d postulaunjbg.lat
+# Fuente: https://github.com/nabsul/k8s-letsencrypt
