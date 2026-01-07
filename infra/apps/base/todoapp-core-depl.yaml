@@ -12,6 +12,15 @@ spec:
       labels:
         app: todoapp-core
     spec:
+      initContainers:
+        - name: init-mongo-wait
+          image: busybox:1.28
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z todoapp-mongo-srv 27017; do echo waiting for mongo; sleep 2; done;",
+            ]
       containers:
         - name: todoapp-core
           image: dalthonmh/todoapp-core

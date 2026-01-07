@@ -32,10 +32,8 @@ EOF
 > - `kind delete cluster --name multinode`
 > - `kind delete cluster -A `
 
-Instalamos un ingress, para este ejemplo usaremos [Ingress nginx](https://github.com/kubernetes/ingress-nginx) de Kubernetes
+Instalamos un ingress, para este ejemplo usaremos [Ingress nginx](https://github.com/kubernetes/ingress-nginx/blob/main/deploy/static/provider/kind/deploy.yaml) de Kubernetes
 
 ```sh
-helm upgrade --install ingress-nginx ingress-nginx \
-  --repo https://kubernetes.github.io/ingress-nginx \
-  --namespace ingress-nginx --create-namespace
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/refs/heads/main/deploy/static/provider/kind/deploy.yaml
 ```

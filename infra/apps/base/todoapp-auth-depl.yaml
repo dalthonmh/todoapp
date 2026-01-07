@@ -12,6 +12,15 @@ spec:
       labels:
         app: todoapp-auth
     spec:
+      initContainers:
+        - name: init-mysql-wait
+          image: busybox:1.28
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z todoapp-mysql-srv 3306; do echo waiting for mysql; sleep 2; done;",
+            ]
       containers:
         - name: todoapp-auth
           image: dalthonmh/todoapp-auth

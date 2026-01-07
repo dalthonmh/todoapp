@@ -47,11 +47,18 @@ spec:
           env:
             - name: MYSQL_ROOT_PASSWORD
               value: password
+
           readinessProbe:
-            tcpSocket:
-              port: 3306
-            initialDelaySeconds: 10
-            periodSeconds: 5
+            exec:
+              command:
+                - sh
+                - -c
+                - mysqladmin ping -h localhost -u root -pppassword
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
           volumeMounts:
             - name: mysql-persistent-storage
               mountPath: /var/lib/mysql

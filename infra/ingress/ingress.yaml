@@ -3,8 +3,9 @@ kind: Ingress
 metadata:
   name: ingress-todoapp
 spec:
+  ingressClassName: nginx
   rules:
-    - host: "todoapp.dev"
+    - host: "todoapp.test"
       http:
         paths:
           - pathType: Prefix
@@ -27,4 +28,4 @@ spec:
               service:
                 name: todoapp-web-srv
                 port:
-                  number: 8080
+                  number: 80
