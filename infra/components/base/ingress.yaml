@@ -16,7 +16,7 @@ spec:
                 port:
                   number: 8080
           - pathType: Prefix
-            path: /api/core
+            path: /api/tasks
             backend:
               service:
                 name: core
