@@ -1,31 +1,31 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ingress-todoapp
+  name: todoapp-ingress
 spec:
   ingressClassName: nginx
   rules:
-    - host: "todoapp.test"
-      http:
+    # 'host' will be patched
+    - http:
         paths:
           - pathType: Prefix
-            path: "/api/auth"
+            path: /api/auth
             backend:
               service:
-                name: todoapp-auth-srv
+                name: auth
                 port:
                   number: 8080
           - pathType: Prefix
-            path: "/api/tasks"
+            path: /api/core
             backend:
               service:
-                name: todoapp-core-srv
+                name: core
                 port:
                   number: 3000
           - pathType: Prefix
-            path: "/"
+            path: /
             backend:
               service:
-                name: todoapp-web-srv
+                name: web
                 port:
                   number: 80
