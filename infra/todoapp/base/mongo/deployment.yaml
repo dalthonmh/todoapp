@@ -1,19 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: todoapp-mongo-depl
+  name: mongo
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      app: todoapp-mongo
   template:
     metadata:
-      labels:
-        app: todoapp-mongo
     spec:
       containers:
-        - name: todoapp-mongo
+        - name: mongo
           image: mongo:7.0-jammy
           ports:
             - containerPort: 27017
@@ -30,24 +25,10 @@ spec:
             failureThreshold: 2
 
           volumeMounts:
-            - name: todoapp-mongodb-storage
+            - name: mongodb-storage
               mountPath: /data/db
       volumes:
-        - name: todoapp-mongodb-storage
+        - name: mongodb-storage
           hostPath:
             path: /tmp/k8s-mongo-data
             type: DirectoryOrCreate
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: todoapp-mongo-srv
-spec:
-  selector:
-    app: todoapp-mongo
-  ports:
-    - name: db
-      protocol: TCP
-      port: 27017
-      targetPort: 27017

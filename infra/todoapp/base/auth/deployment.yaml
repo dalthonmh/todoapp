@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+spec:
+  replicas: 1
+  template:
+    metadata:
+    spec:
+      initContainers:
+        - name: init-mysql-wait
+          image: busybox:1.28
+          command: ["sh", "-c", "until nc -z mysql 3306; do echo waiting for mysql; sleep 2; done;"]
+      containers:
+        - name: auth
+          image: dalthonmh/todoapp-auth
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DB_DSN
+              value: "root:password@tcp(mysql:3306)/authdb?charset=utf8mb4&parseTime=True&loc=Local"
+            - name: JWT_SECRET
+              value: secret

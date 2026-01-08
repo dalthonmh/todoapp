@@ -1,0 +1,14 @@
+# kustomization.yaml in environment
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: dev
+
+labels:
+  - includeSelectors: true
+    pairs:
+      env: dev
+
+resources:
+  - namespace.yaml
+  - ../../base/

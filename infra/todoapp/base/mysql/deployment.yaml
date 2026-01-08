@@ -1,61 +1,42 @@
----
-# MySQL ConfigMap
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: mysql-initdb-config
-data:
-  init.sql: |
-    CREATE DATABASE IF NOT EXISTS authdb;
-
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: todoapp-mysql-depl
-  labels:
-    app: todoapp-mysql
+  name: mysql
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      app: todoapp-mysql
   template:
     metadata:
-      labels:
-        app: todoapp-mysql
     spec:
       containers:
-        - name: todoapp-mysql
+        - name: mysql
           image: mysql:5.7
           ports:
             - containerPort: 3306
           env:
             - name: MYSQL_ROOT_PASSWORD
               value: password
+
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - mysqladmin ping -h localhost -u root -ppassword
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
           volumeMounts:
-            - name: mysql-persistent-storage
+            - name: mysql-storage
               mountPath: /var/lib/mysql
             - name: mysql-initdb
               mountPath: /docker-entrypoint-initdb.d
       volumes:
-        - name: mysql-persistent-storage
+        - name: mysql-storage
           hostPath:
             path: /tmp/k8s-mysql-data
             type: DirectoryOrCreate
         - name: mysql-initdb
           configMap:
             name: mysql-initdb-config
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: todoapp-mysql-srv
-spec:
-  selector:
-    app: todoapp-mysql
-  ports:
-    - port: 3306
-      protocol: TCP
-      targetPort: 3306

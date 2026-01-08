@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: core
+spec:
+  replicas: 1
+  template:
+    metadata:
+    spec:
+      initContainers:
+        - name: init-mongo-wait
+          image: busybox:1.28
+          command:
+            ["sh", "-c", "until nc -z mongo 27017; do echo waiting for mongo; sleep 2; done;"]
+      containers:
+        - name: core
+          image: dalthonmh/todoapp-core
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MONGODB_URI
+              value: "mongodb://mongo:27017/core"
+            - name: JWT_SECRET
+              value: secret
