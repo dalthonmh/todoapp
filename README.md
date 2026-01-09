@@ -1,12 +1,12 @@
-# ToDo-APP in Kubernetes
+# ToDo App on Kubernetes
 
-Aplicacion creada para probar la infraestructura en la nube
+This application was designed to practice and test cloud infrastructure deployments.
 
-## Instalación
+## Installation
 
-### Clonar repositorios
+### Clone repositories
 
-Todos los repositorios pueden ser descargados desde github:
+All microservices are available on GitHub:
 
 ```sh
 git clone https://github.com/dalthonmh/todoapp-auth
@@ -14,13 +14,15 @@ git clone https://github.com/dalthonmh/todoapp-core
 git clone https://github.com/dalthonmh/todoapp-web
 ```
 
-Para iniciar cada proyecto entramos dentro de cada uno y seguimos sus pasos de instalación.
+To run each project individually, navigate into their respective folders and follow their installation steps.
 
-## Instalación con Kubernetes
+## Kubernetes Deployment
 
-### Entorno local
+**Local Environment Setup**
 
-Usaremos [kind](https://kind.sigs.k8s.io/) como cluster local de kubernetes usando docker. Iniciamos Docker y creamos un cluster con Kind.
+We will use [kind](https://kind.sigs.k8s.io/) to run a local Kubernetes cluster using Docker.
+
+### 1. Create the cluster
 
 ```sh
 kind create cluster --config - <<EOF
@@ -44,49 +46,47 @@ nodes:
 EOF
 ```
 
-> Nota: Si quieres eliminar clusters de kind antes iniciar puedes ejecutar: `kind delete cluster --name kind`
+> Note: If you need to delete an existing cluster before starting, run: `kind delete cluster --name kind`
 
-Instalamos un ingress class, para este ejemplo usaremos [Ingress nginx](https://github.com/kubernetes/ingress-nginx/blob/main/deploy/static/provider/kind/deploy.yaml) de Kubernetes
+### 2. Install NGIN Ingress Controller
+
+Apply the [Ingress Nginx](https://github.com/kubernetes/ingress-nginx/blob/main/deploy/static/provider/kind/deploy.yaml) manifest compatible with Kind:
 
 ```sh
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
 ```
 
-> Nota: si has creado un cluster con mas de un nodo, asegurate de que el pod ingress-nginx-controller se ejecute en el controlplane.
+> Note: If you have created a cluster with more than one node, make sure that the ingress-nginx-controller pod is running in the Control Plane.
 
-Iniciaremos las aplicaciones con kustomize en el entorno de desarrollo:
+### 3. Deploy the Application and the ingress
+
+With kustomize on kubectl apply the following
 
 ```sh
 kubectl apply -k infra/todoapp/overlays/dev
-```
-
-Despues instalamos el ingress
-
-```sh
 kubectl apply -k infra/components/overlays/dev
 ```
 
-Configuramos los /etc/hosts para que podamos verlo en el navegador:
+**Configure Local Access**
+
+To access the application in the browser, you need to configure your hosts file:
+
+- For macOS/Linux
 
 ```sh
 vim /etc/hosts
 ```
 
-Agregamos lo siguiente:
+- For Windows: Open the file as Administrator
+
+```sh
+"C:\Windows\System32\drivers\etc\hosts"
+```
+
+Add the following line at last:
 
 ```text
-#
-# localhost is used to configure the loopback interface
-# when the system is booting.  Do not change this entry.
-##
-127.0.0.1       localhost
-::1             localhost
 127.0.0.1 todoapp.test
 ```
 
-Para windows:
-
-```sh
-vim "C:\Windows\System32\drivers\etc\hosts"
-127.0.0.1   todoapp.test
-```
+Then you can test on the browser at http://todoapp.test
