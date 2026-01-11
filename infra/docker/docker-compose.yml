@@ -1,0 +1,64 @@
+services:
+  mysql:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  auth-init-container:
+    image: alpine:latest
+    command: sh -c "until nc -z -w 2 mysql 3306; do echo 'waiting MySQL...'; sleep 2; done; echo 'MySQL is ready!'"
+    restart: "no"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  auth:
+    image: dalthonmh/todoapp-auth:latest
+    restart: always
+    environment:
+      DB_DSN: ${DB_DSN}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      auth-init-container:
+        condition: service_completed_successfully
+
+  mongo:
+    image: mongo
+    restart: always
+    volumes:
+      - mongo-data:/data/db
+
+  core:
+    image: dalthonmh/todoapp-core:latest
+    restart: always
+    environment:
+      - MONGODB_URI=${MONGODB_URI}
+    depends_on:
+      - mongo
+
+  web:
+    image: dalthonmh/todoapp-web:stage
+    restart: always
+
+  gateway:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - web
+      - auth
+      - core
+
+volumes:
+  mongo-data:

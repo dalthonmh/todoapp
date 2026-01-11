@@ -3,4 +3,5 @@ todoapp-core
 todoapp-web
 
 trash
+.env
 .DS_Store
