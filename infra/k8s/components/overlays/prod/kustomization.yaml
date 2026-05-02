@@ -8,16 +8,34 @@ resources:
 
 patches:
   - target:
-      kind: Ingress
-      name: todoapp-ingress
+      kind: Gateway
+      name: todoapp-gateway
     patch: |-
-      - op: replace
-        path: /spec/rules/0/host
-        value: todoapp.com
+      - op: add
+        path: /spec/listeners/0/hostname
+        value: dalthonmh.space
 
       - op: add
-        path: /spec/tls
+        path: /spec/listeners/-
         value:
-          - hosts:
-              - todoapp.com
-            secretName: todoapp-prod-tls
+          name: https
+          protocol: HTTPS
+          port: 443
+          hostname: dalthonmh.space
+          tls:
+            mode: Terminate
+            certificateRefs:
+              - name: todoapp-prod-tls
+                kind: Secret
+          allowedRoutes:
+            namespaces:
+              from: Same
+
+  - target:
+      kind: HTTPRoute
+      name: todoapp-route
+    patch: |-
+      - op: add
+        path: /spec/hostnames
+        value:
+          - dalthonmh.space
