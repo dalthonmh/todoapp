@@ -2,8 +2,6 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: todoapp-gateway
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   gatewayClassName: eg
   listeners:

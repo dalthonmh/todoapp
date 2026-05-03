@@ -5,6 +5,7 @@ namespace: prod
 
 resources:
   - ../../base
+  - certificate.yaml
 
 patches:
   - target:
