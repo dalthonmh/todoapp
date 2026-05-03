@@ -58,8 +58,7 @@ chmod 700 get_helm.sh
 ./get_helm.sh
 ```
 
-Instalar Envoy Gateway (incluye el GatewayClass `eg`):
-Los CRDs no vienen con Kubernetes, hay que instalarlos antes de aplicar cualquier `Gateway` o `HTTPRoute`.
+Instalar Envoy Gateway (el chart incluye los Gateway API CRDs y crea el GatewayClass `eg`):
 
 ```sh
 helm install eg oci://docker.io/envoyproxy/gateway-helm \
@@ -69,8 +68,6 @@ helm install eg oci://docker.io/envoyproxy/gateway-helm \
 
 kubectl wait --timeout=5m -n envoy-gateway-system \
   deployment/envoy-gateway --for=condition=Available
-
-kubectl apply -f https://github.com/envoyproxy/gateway/releases/download/v1.7.2/quickstart.yaml -n default
 ```
 
 Verificar:
@@ -86,19 +83,42 @@ kubectl get gatewayclass
 
 ---
 
-## 4. Desplegar con Kustomize
+## 3. Desplegar los microservicios
+
+```sh
+# Desarrollo
+kubectl apply -k infra/k8s/todoapp/overlays/dev
+
+# Producción
+kubectl apply -k infra/k8s/todoapp/overlays/prod
+```
+
+---
+
+## 4. Desplegar el Gateway y las rutas
 
 ```sh
 # Ver manifiestos renderizados (sin aplicar)
-kustomize build infra/k8s/components/overlays/dev
+kustomize build infra/k8s/components/overlays/prod
 
-# Aplicar — desarrollo
-kubectl apply -k infra/k8s/todoapp/overlays/dev
+# Desarrollo
 kubectl apply -k infra/k8s/components/overlays/dev
 
-# Aplicar — producción
-kubectl apply -k infra/k8s/todoapp/overlays/prod
+# Producción
 kubectl apply -k infra/k8s/components/overlays/prod
+```
+
+Esto crea en el namespace correspondiente:
+
+- `Gateway/todoapp-gateway` — listener HTTP (dev) o HTTP+HTTPS (prod)
+- `HTTPRoute/todoapp-route` — reglas de ruteo hacia `auth`, `core` y `web`
+
+Envoy Gateway detecta el Gateway y provisiona automáticamente un pod Envoy proxy. Verificar que `PROGRAMMED=True`:
+
+```sh
+kubectl get gateway -n prod
+# NAME               CLASS   ADDRESS        PROGRAMMED   AGE
+# todoapp-gateway    eg      203.0.113.10   True         1m
 ```
 
 ---

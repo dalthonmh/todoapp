@@ -1,0 +1,18 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: devops@dalthonmh.space
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+      - http01:
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: todoapp-gateway
+                namespace: prod
+                kind: Gateway
+                group: gateway.networking.k8s.io
