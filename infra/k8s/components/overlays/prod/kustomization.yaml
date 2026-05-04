@@ -16,22 +16,6 @@ patches:
         path: /spec/listeners/0/hostname
         value: dalthonmh.space
 
-      - op: add
-        path: /spec/listeners/-
-        value:
-          name: https
-          protocol: HTTPS
-          port: 443
-          hostname: dalthonmh.space
-          tls:
-            mode: Terminate
-            certificateRefs:
-              - name: todoapp-prod-tls
-                kind: Secret
-          allowedRoutes:
-            namespaces:
-              from: Same
-
   - target:
       kind: HTTPRoute
       name: todoapp-route
