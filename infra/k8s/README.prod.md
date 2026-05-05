@@ -184,7 +184,7 @@ Esperar a que cert-manager complete el challenge HTTP-01 y emita el certificado 
 
 ```sh
 # Seguir el estado del certificado
-kubectl get certificate -n prod -w
+watch kubectl get certificate -n prod
 # READY=True indica que el Secret todoapp-prod-tls ya existe
 ```
 
@@ -192,7 +192,7 @@ Si se queda en `Ready=False`, revisar los eventos:
 
 ```sh
 kubectl describe certificaterequest -n prod
-kubectl get challenges -n prod
+watch kubectl get challenges -n prod
 ```
 
 > **Requisito:** Let's Encrypt hace una petición HTTP al puerto 80 del dominio. El firewall del nodo debe permitir tráfico entrante en los puertos 80 y 443.
@@ -221,8 +221,6 @@ kubectl patch gateway todoapp-gateway -n prod --type=json -p='
 Verificar que el listener HTTPS queda `PROGRAMMED=True`:
 
 ```sh
-kubectl get gateway todoapp-gateway -n prod -o jsonpath='{.status.listeners[*].conditions}'
-# o más legible:
 kubectl describe gateway todoapp-gateway -n prod | grep -A5 'Listener Statuses'
 ```
 
@@ -241,7 +239,15 @@ Para ver motivo de fallo
 # Obtén el nombre exacto del challenge
 
 kubectl get challenges -n prod
+kubectl get certificate -n prod
 
 # Describe el challenge para ver los eventos y el mensaje de error
 
 kubectl describe challenge <nombre-del-challenge> -n prod
+
+# eliminar
+
+k delete certificate todoapp-prod-tls -n prod
+kubectl get challenges -n prod
+k delete challenge todoapp-prod-tls-1-2528916744-3146306319 -n prod
+kubectl delete order -n prod --all

@@ -8,18 +8,9 @@ resources:
 
 patches:
   - target:
-      kind: Gateway
-      name: todoapp-gateway
+      kind: Ingress
+      name: todoapp-ingress
     patch: |-
-      - op: add
-        path: /spec/listeners/0/hostname
+      - op: replace
+        path: /spec/rules/0/host
         value: todoapp.test
-
-  - target:
-      kind: HTTPRoute
-      name: todoapp-route
-    patch: |-
-      - op: add
-        path: /spec/hostnames
-        value:
-          - todoapp.test
