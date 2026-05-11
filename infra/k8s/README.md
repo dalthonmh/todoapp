@@ -2,9 +2,6 @@
 
 Routing de la TodoApp usando **Gateway API** gestionado con **Kustomize**.
 
-- [Desarrollo →](README.dev.md)
-- [Producción →](README.prod.md)
-
 ---
 
 ## Estructura

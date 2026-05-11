@@ -1,0 +1,412 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    env: dev
+  name: default
+---
+apiVersion: v1
+data:
+  init.sql: |
+    CREATE DATABASE IF NOT EXISTS authdb;
+kind: ConfigMap
+metadata:
+  annotations:
+    contact: devops@todoapp.com
+  labels:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: mysql
+    app.kubernetes.io/part-of: todoapp
+    env: dev
+  name: mysql-initdb-config
+  namespace: default
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    contact: devops@todoapp.com
+  labels:
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: auth
+    app.kubernetes.io/part-of: todoapp
+    env: dev
+  name: auth
+  namespace: default
+spec:
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: auth
+    app.kubernetes.io/part-of: todoapp
+    env: dev
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    contact: devops@todoapp.com
+  labels:
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: core
+    app.kubernetes.io/part-of: todoapp
+    env: dev
+  name: core
+  namespace: default
+spec:
+  ports:
+    - name: http
+      port: 3000
+      protocol: TCP
+      targetPort: 3000
+  selector:
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: core
+    app.kubernetes.io/part-of: todoapp
+    env: dev
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    contact: devops@todoapp.com
+  labels:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: mongo
+    app.kubernetes.io/part-of: todoapp
+    env: dev
+  name: mongo
+  namespace: default
+spec:
+  ports:
+    - name: http
+      port: 27017
+      protocol: TCP
+      targetPort: 27017
+  selector:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: mongo
+    app.kubernetes.io/part-of: todoapp
+    env: dev
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    contact: devops@todoapp.com
+  labels:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: mysql
+    app.kubernetes.io/part-of: todoapp
+    env: dev
+  name: mysql
+  namespace: default
+spec:
+  ports:
+    - name: http
+      port: 3306
+      protocol: TCP
+      targetPort: 3306
+  selector:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: mysql
+    app.kubernetes.io/part-of: todoapp
+    env: dev
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    contact: devops@todoapp.com
+  labels:
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: web
+    app.kubernetes.io/part-of: todoapp
+    env: dev
+  name: web
+  namespace: default
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: web
+    app.kubernetes.io/part-of: todoapp
+    env: dev
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    contact: devops@todoapp.com
+  labels:
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: auth
+    app.kubernetes.io/part-of: todoapp
+    env: dev
+  name: auth
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: backend
+      app.kubernetes.io/managed-by: kustomize
+      app.kubernetes.io/name: auth
+      app.kubernetes.io/part-of: todoapp
+      env: dev
+  template:
+    metadata:
+      annotations:
+        contact: devops@todoapp.com
+      labels:
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/managed-by: kustomize
+        app.kubernetes.io/name: auth
+        app.kubernetes.io/part-of: todoapp
+        env: dev
+    spec:
+      containers:
+        - env:
+            - name: DB_DSN
+              value: root:password@tcp(mysql:3306)/authdb?charset=utf8mb4&parseTime=True&loc=Local
+            - name: JWT_SECRET
+              value: secret
+          image: dalthonmh/todoapp-auth
+          imagePullPolicy: IfNotPresent
+          name: auth
+      initContainers:
+        - command:
+            - sh
+            - -c
+            - until nc -z mysql 3306; do echo waiting for mysql; sleep 2; done;
+          image: busybox:1.28
+          name: init-mysql-wait
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    contact: devops@todoapp.com
+  labels:
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: core
+    app.kubernetes.io/part-of: todoapp
+    env: dev
+  name: core
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: backend
+      app.kubernetes.io/managed-by: kustomize
+      app.kubernetes.io/name: core
+      app.kubernetes.io/part-of: todoapp
+      env: dev
+  template:
+    metadata:
+      annotations:
+        contact: devops@todoapp.com
+      labels:
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/managed-by: kustomize
+        app.kubernetes.io/name: core
+        app.kubernetes.io/part-of: todoapp
+        env: dev
+    spec:
+      containers:
+        - env:
+            - name: MONGODB_URI
+              value: mongodb://mongo:27017/core
+            - name: JWT_SECRET
+              value: secret
+          image: dalthonmh/todoapp-core
+          imagePullPolicy: IfNotPresent
+          name: core
+      initContainers:
+        - command:
+            - sh
+            - -c
+            - until nc -z mongo 27017; do echo waiting for mongo; sleep 2; done;
+          image: busybox:1.28
+          name: init-mongo-wait
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    contact: devops@todoapp.com
+  labels:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: mongo
+    app.kubernetes.io/part-of: todoapp
+    env: dev
+  name: mongo
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: database
+      app.kubernetes.io/managed-by: kustomize
+      app.kubernetes.io/name: mongo
+      app.kubernetes.io/part-of: todoapp
+      env: dev
+  template:
+    metadata:
+      annotations:
+        contact: devops@todoapp.com
+      labels:
+        app.kubernetes.io/component: database
+        app.kubernetes.io/managed-by: kustomize
+        app.kubernetes.io/name: mongo
+        app.kubernetes.io/part-of: todoapp
+        env: dev
+    spec:
+      containers:
+        - image: mongo:7.0-jammy
+          name: mongo
+          ports:
+            - containerPort: 27017
+          readinessProbe:
+            exec:
+              command:
+                - mongosh
+                - --eval
+                - db.adminCommand('ping')
+            failureThreshold: 2
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            - mountPath: /data/db
+              name: mongodb-storage
+      volumes:
+        - hostPath:
+            path: /tmp/k8s-mongo-data
+            type: DirectoryOrCreate
+          name: mongodb-storage
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    contact: devops@todoapp.com
+  labels:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: mysql
+    app.kubernetes.io/part-of: todoapp
+    env: dev
+  name: mysql
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: database
+      app.kubernetes.io/managed-by: kustomize
+      app.kubernetes.io/name: mysql
+      app.kubernetes.io/part-of: todoapp
+      env: dev
+  template:
+    metadata:
+      annotations:
+        contact: devops@todoapp.com
+      labels:
+        app.kubernetes.io/component: database
+        app.kubernetes.io/managed-by: kustomize
+        app.kubernetes.io/name: mysql
+        app.kubernetes.io/part-of: todoapp
+        env: dev
+    spec:
+      containers:
+        - env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: password
+          image: mysql:5.7
+          name: mysql
+          ports:
+            - containerPort: 3306
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - mysqladmin ping -h localhost -u root -ppassword
+            failureThreshold: 3
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: mysql-storage
+            - mountPath: /docker-entrypoint-initdb.d
+              name: mysql-initdb
+      volumes:
+        - hostPath:
+            path: /tmp/k8s-mysql-data
+            type: DirectoryOrCreate
+          name: mysql-storage
+        - configMap:
+            name: mysql-initdb-config
+          name: mysql-initdb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    contact: devops@todoapp.com
+  labels:
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: web
+    app.kubernetes.io/part-of: todoapp
+    env: dev
+  name: web
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: frontend
+      app.kubernetes.io/managed-by: kustomize
+      app.kubernetes.io/name: web
+      app.kubernetes.io/part-of: todoapp
+      env: dev
+  template:
+    metadata:
+      annotations:
+        contact: devops@todoapp.com
+      labels:
+        app.kubernetes.io/component: frontend
+        app.kubernetes.io/managed-by: kustomize
+        app.kubernetes.io/name: web
+        app.kubernetes.io/part-of: todoapp
+        env: dev
+    spec:
+      containers:
+        - image: dalthonmh/todoapp-web:stage
+          name: web
