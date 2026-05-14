@@ -60,6 +60,10 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main
 
 ### 3. Deploy the Application and the ingress
 
+```sh
+git clone https://github.com/dalthonmh/todoapp.git
+```
+
 With kustomize on kubectl apply the following
 
 ```sh
@@ -67,6 +71,8 @@ kubectl kustomize infra/k8s/todoapp/overlays/dev
 
 kubectl apply -k infra/k8s/todoapp/overlays/dev
 kubectl apply -k infra/k8s/components/overlays/dev
+
+kubectl apply -k infra/k8s/todoapp/overlays/prod
 ```
 
 **Configure Local Access**
