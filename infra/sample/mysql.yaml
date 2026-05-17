@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: sample-posgresql-pv
+  name: sample-mysql-pv
 spec:
   capacity:
     storage: 1Gi
@@ -9,13 +9,14 @@ spec:
     - ReadWriteOnce
   storageClassName: ""
   hostPath:
-    path: /tmp/sample-postgresql
+    path: /mnt/data/sample-mysql
     type: DirectoryOrCreate
+
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: sample-posgresql-pvc
+  name: sample-mysql-pvc
 spec:
   accessModes:
     - ReadWriteOnce
@@ -28,39 +29,44 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sample-posgresql-depl
+  name: sample-mysql-depl
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: sample-postgresql
+    app.kubernetes.io/instance: sample-mysql
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: sample-posgresql
+      app: sample-mysql
   template:
     metadata:
       labels:
-        app: sample-posgresql
+        app: sample-mysql
     spec:
       containers:
-        - name: sample-posgresql
-          image: postgres:14-alpine
+        - name: sample-mysql
+          image: mysql:8.0
           ports:
-            - containerPort: 5432
+            - containerPort: 3306
           env:
-            - name: POSTGRES_DB
+            - name: MYSQL_DATABASE
               value: "my_database"
-            - name: POSTGRES_USER
+            - name: MYSQL_USER
               value: "admin"
-            - name: POSTGRES_PASSWORD
+            - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgresql-secret
-                  key: POSTGRES_PASSWORD
+                  name: mysql-secret
+                  key: MYSQL_PASSWORD
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
           volumeMounts:
-            - name: sample-posgresql-storage
-              mountPath: /var/lib/postgresql/data
-              subPath: postgres-data
+            - name: sample-mysql-storage
+              mountPath: /var/lib/mysql
+              subPath: mysql-data
           resources:
             requests:
               cpu: "250m"
@@ -69,24 +75,24 @@ spec:
               cpu: "500m"
               memory: "1Gi"
       volumes:
-        - name: sample-posgresql-storage
+        - name: sample-mysql-storage
           persistentVolumeClaim:
-            claimName: sample-posgresql-pvc
+            claimName: sample-mysql-pvc
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: sample-posgresql-srv
+  name: sample-mysql-srv
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: sample-postgresql
+    app.kubernetes.io/instance: sample-mysql
 spec:
   selector:
-    app: sample-posgresql
+    app: sample-mysql
   ports:
     - protocol: TCP
-      port: 5432
-      targetPort: 5432
-      nodePort: 30032
+      port: 3306
+      targetPort: 3306
+      nodePort: 30033
   type: NodePort
