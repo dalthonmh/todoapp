@@ -13,7 +13,7 @@ spec:
           command: ["sh", "-c", "until nc -z mysql 3306; do echo waiting for mysql; sleep 2; done;"]
       containers:
         - name: auth
-          image: dalthonmh/todoapp-auth
+          image: dalthonmh/todoapp-auth:latest
           imagePullPolicy: Always
           env:
             - name: DB_DSN

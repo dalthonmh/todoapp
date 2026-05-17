@@ -9,5 +9,5 @@ spec:
     spec:
       containers:
         - name: web
-          image: dalthonmh/todoapp-web
+          image: dalthonmh/todoapp-web:latest
           imagePullPolicy: Always
