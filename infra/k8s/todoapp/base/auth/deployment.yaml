@@ -14,7 +14,7 @@ spec:
       containers:
         - name: auth
           image: dalthonmh/todoapp-auth
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           env:
             - name: DB_DSN
               value: "root:password@tcp(mysql:3306)/authdb?charset=utf8mb4&parseTime=True&loc=Local"

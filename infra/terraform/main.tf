@@ -18,7 +18,7 @@ resource "digitalocean_ssh_key" "do_key" {
 
 # Controlplane
 resource "digitalocean_droplet" "cp01" {
-  name     = "cp01.unjbg.edu.pe"  
+  name     = "cp01"  
   region   = "nyc3"
   size     = "s-4vcpu-8gb"
   image    = "debian-13-x64"
@@ -27,7 +27,7 @@ resource "digitalocean_droplet" "cp01" {
 
 # Worker 1
 # resource "digitalocean_droplet" "wk01" {
-#   name     = "wk01.unjbg.edu.pe"
+#   name     = "wk01"
 #   region   = "nyc3"
 #   size     = "s-4vcpu-8gb"
 #   image    = "debian-13-x64"
