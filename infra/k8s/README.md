@@ -30,7 +30,6 @@ Kustomize configurations to deploy the TodoApp to Kubernetes.
 ## Prerequisites
 
 - Kubernetes cluster with `kubectl`
-- `kustomize` (v5+ recommended)
 - **Dev**: Install NGINX Ingress Controller:
   ```bash
   kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.3/deploy/static/provider/cloud/deploy.yaml
