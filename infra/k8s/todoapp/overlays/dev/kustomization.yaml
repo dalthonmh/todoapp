@@ -10,7 +10,7 @@ labels:
 
 images:
   - name: dalthonmh/todoapp-web
-    newTag: "stage"
+    newTag: "main"
 
 resources:
   - namespace.yaml

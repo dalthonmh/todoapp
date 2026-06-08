@@ -2,30 +2,23 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: todoapp-ingress
-  namespace: prod
+  namespace: default
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/use-regex: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
   ingressClassName: nginx
-  tls:
-    - hosts:
-        - dalthonmh.space
-      secretName: letsencrypt-prod
   rules:
-    - host: dalthonmh.space
+    - host: todoapp.test
       http:
         paths:
-          - path: /api/auth/
+          - path: /api/auth
             pathType: Prefix
             backend:
               service:
                 name: auth
                 port:
                   number: 8080
-          - path: /api/tasks/
+          - path: /api/tasks
             pathType: Prefix
             backend:
               service:

@@ -2,19 +2,12 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: todoapp-ingress
-  namespace: default
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    traefik.ingress.kubernetes.io/router.entrypoints: "web,websecure"
-    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.entrypoints: "web"
 spec:
   ingressClassName: traefik
-  tls:
-    - hosts:
-        - dalthonmh.space
-      secretName: letsencrypt-prod
   rules:
-    - host: dalthonmh.space
+    - host: todoapp.YOUR_VPS_IP.nip.io
       http:
         paths:
           - path: /api/auth/

@@ -58,6 +58,16 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main
 
 > Note: If you have created a cluster with more than one node, make sure that the ingress-nginx-controller pod is running in the Control Plane.
 
+### Instalar traefik
+
+Usaremos helm
+
+```bash
+helm repo add traefik https://traefik.github.io/charts
+helm repo update
+helm install traefik traefik/traefik
+```
+
 ### 3. Deploy the Application and the ingress
 
 ```sh
@@ -67,7 +77,7 @@ git clone https://github.com/dalthonmh/todoapp.git
 With kustomize on kubectl apply the following
 
 ```sh
-kubectl kustomize infra/k8s/todoapp/overlays/dev
+# kubectl kustomize infra/k8s/todoapp/overlays/dev
 
 kubectl apply -k infra/k8s/todoapp/overlays/dev
 kubectl apply -k infra/k8s/components/overlays/dev
