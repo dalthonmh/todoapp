@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: todoapp-bootstrap-dev
+  namespace: argocd
+  # This is the "root" application that manages the dev Applications via GitOps
+spec:
+  project: todoapp
+  source:
+    repoURL: https://github.com/dalthonmh/todoapp.git
+    targetRevision: HEAD
+    # This path contains other Application manifests.
+    # ArgoCD will create the Applications defined inside this directory.
+    path: infra/argocd/applications/dev
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+  # This bootstrap app only manages Application CRs in the argocd namespace.
+  # The actual workloads go to the 'default' namespace as defined in the child Applications.

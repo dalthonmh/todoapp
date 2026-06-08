@@ -1,0 +1,50 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: todoapp
+  namespace: argocd
+spec:
+  description: Project for the TodoApp microservices and supporting components.
+
+  # Allow deploying to the default namespace (current setup)
+  destinations:
+    - namespace: default
+      server: https://kubernetes.default.svc
+    # Add more destinations (other clusters/namespaces) as needed
+    # - namespace: 'todoapp-*'
+    #   server: https://kubernetes.default.svc
+
+  # Source repositories allowed for this project
+  sourceRepos:
+    - https://github.com/dalthonmh/todoapp.git
+    # Add your fork or other allowed repos here
+
+  # Allow common cluster resources
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+    - group: 'networking.k8s.io'
+      kind: IngressClass
+
+  # Namespace-scoped resources we expect to manage
+  namespaceResourceWhitelist:
+    - group: ''
+      kind: ConfigMap
+    - group: ''
+      kind: Secret
+    - group: ''
+      kind: Service
+    - group: apps
+      kind: Deployment
+    - group: networking.k8s.io
+      kind: Ingress
+
+  # Roles (optional but recommended for teams)
+  roles:
+    - name: admin
+      description: Admin access to todoapp project
+      policies:
+        - p, proj:todoapp:admin, applications, *, todoapp/*, allow
+      groups:
+        # Add your GitHub/GitLab teams or OIDC groups here
+        # - my-org:platform-team

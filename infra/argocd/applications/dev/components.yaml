@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: components-dev
+  namespace: argocd
+  annotations:
+    # Higher sync wave so it applies after the todoapp workloads (Services must exist first)
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  project: todoapp
+  source:
+    repoURL: https://github.com/dalthonmh/todoapp.git
+    targetRevision: HEAD
+    path: infra/k8s/components/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+  # The components Application depends on the todoapp Application having created the Services
+  # We rely on sync-wave ordering. Alternatively you can use:
+  # syncPolicy:
+  #   syncOptions:
+  #     - ApplyOutOfSyncOnly=true

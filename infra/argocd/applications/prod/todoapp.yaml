@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: todoapp-prod
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: todoapp
+  source:
+    repoURL: https://github.com/dalthonmh/todoapp.git
+    targetRevision: HEAD
+    path: infra/k8s/todoapp/overlays/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  # For production we default to manual sync for safety
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=false
+      - PruneLast=true
+  # Example: you can enable automated sync for prod if you prefer
+  # syncPolicy:
+  #   automated:
+  #     prune: true
+  #     selfHeal: true

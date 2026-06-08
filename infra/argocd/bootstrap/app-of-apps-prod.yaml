@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: todoapp-bootstrap-prod
+  namespace: argocd
+spec:
+  project: todoapp
+  source:
+    repoURL: https://github.com/dalthonmh/todoapp.git
+    targetRevision: HEAD
+    path: infra/argocd/applications/prod
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    # Production bootstrap is manual by default
+    syncOptions:
+      - CreateNamespace=true
+  # After creating this bootstrap Application, ArgoCD will create
+  # the todoapp-prod and components-prod Applications defined in the prod/ folder.

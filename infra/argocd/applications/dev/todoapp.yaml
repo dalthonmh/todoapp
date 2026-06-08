@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: todoapp-dev
+  namespace: argocd
+  # Sync wave - lower number means it syncs earlier
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: todoapp
+  source:
+    repoURL: https://github.com/dalthonmh/todoapp.git
+    targetRevision: HEAD
+    path: infra/k8s/todoapp/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+  # Optional: ignore differences that are not managed by Git
+  # ignoreDifferences:
+  #   - group: apps
+  #     kind: Deployment
+  #     name: web
+  #     jsonPointers:
+  #       - /spec/replicas
