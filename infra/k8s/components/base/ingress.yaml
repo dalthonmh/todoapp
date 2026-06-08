@@ -2,22 +2,23 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: todoapp-ingress
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: "web"
+  # La namespace se puede inyectar desde el overlay (con `namespace:`) o vía transformer.
+  # Las anotaciones específicas del Ingress Controller y el ingressClassName
+  # se configuran en los overlays (dev usa nginx, prod usa traefik).
 spec:
-  ingressClassName: traefik
+  # ingressClassName: se define en overlay
   rules:
-    - host: todoapp.YOUR_VPS_IP.nip.io
+    - host: todoapp.example.com
       http:
         paths:
-          - path: /api/auth/
+          - path: /api/auth
             pathType: Prefix
             backend:
               service:
                 name: auth
                 port:
                   number: 8080
-          - path: /api/tasks/
+          - path: /api/tasks
             pathType: Prefix
             backend:
               service:

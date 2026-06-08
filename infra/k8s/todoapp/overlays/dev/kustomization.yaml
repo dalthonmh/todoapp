@@ -8,10 +8,5 @@ labels:
     pairs:
       env: dev
 
-images:
-  - name: dalthonmh/todoapp-web
-    newTag: "main"
-
 resources:
-  - namespace.yaml
   - ../../base/

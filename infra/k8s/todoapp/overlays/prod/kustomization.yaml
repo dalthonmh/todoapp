@@ -9,5 +9,4 @@ labels:
       env: prod
 
 resources:
-  - namespace.yaml
   - ../../base/
