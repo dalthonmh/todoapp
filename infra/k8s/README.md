@@ -32,7 +32,7 @@ Kustomize configurations to deploy the TodoApp to Kubernetes.
 - Kubernetes cluster with `kubectl`
 - **Dev**: Install NGINX Ingress Controller:
   ```bash
-  kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.3/deploy/static/provider/cloud/deploy.yaml
+  kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
   kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
   ```
 - **Prod**: Install Traefik (Helm):
