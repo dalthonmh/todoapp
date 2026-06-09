@@ -22,9 +22,9 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: core
+                name: task
                 port:
-                  number: 3000
+                  number: 8085
           - path: /
             pathType: Prefix
             backend:

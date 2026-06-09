@@ -20,4 +20,4 @@ spec:
             - name: MONGODB_URI
               value: "mongodb://mongo:27017/core"
             - name: JWT_SECRET
-              value: secret
+              value: todoapp-my-secret-dalthonmh-jwtkey
