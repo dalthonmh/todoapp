@@ -1,49 +1,42 @@
 # Kubernetes Setup for TodoApp
 
-Kustomize configurations to deploy the TodoApp to Kubernetes.
+Kustomize-based deployment for the TodoApp microservices.
 
 ## Structure
 
-- **todoapp/** — Application workloads:
-  - `auth` (Go, port 8080)
-  - `core` (Node.js, port 3000)
-  - `web` (frontend, port 80)
-  - `mysql` (auth database)
-  - `mongo` (core database)
-- **components/** — Ingress routing rules
+- **todoapp/**: Application services (auth, core, task, web, mysql, mongo, postgres)
+- **components/**: Shared Ingress configuration
 
-## Routing
+### Routing
 
 | Path         | Service | Port |
 | ------------ | ------- | ---- |
 | `/api/auth`  | auth    | 8080 |
-| `/api/tasks` | core    | 3000 |
+| `/api/tasks` | task    | 8085 |
 | `/`          | web     | 80   |
 
-## Environments
+### Environments
 
-| Environment | Ingress Controller | Hostname              | Use Case               |
-| ----------- | ------------------ | --------------------- | ---------------------- |
-| dev         | NGINX              | todoapp.test          | Local (kind, minikube) |
-| prod        | Traefik            | `todoapp.<IP>.nip.io` | VPS or cloud           |
+| Environment | Ingress | Hostname              | Typical Use           |
+| ----------- | ------- | --------------------- | --------------------- |
+| dev         | NGINX   | todoapp.test          | Local (kind/minikube) |
+| prod        | Traefik | `todoapp.<IP>.nip.io` | VPS / cloud           |
 
 ## Prerequisites
 
-- Kubernetes cluster with `kubectl`
-- **Dev**: Install NGINX Ingress Controller:
-  ```bash
-  kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
-  kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
-  ```
-- **Prod**: Install Traefik (Helm):
-  ```bash
-  helm repo add traefik https://traefik.github.io/charts
-  helm install traefik traefik/traefik --namespace traefik --create-namespace
-  ```
+- A running Kubernetes cluster with `kubectl` configured.
+- Ingress controller:
+  - **Dev**: Install NGINX Ingress (example for kind):
+    ```bash
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+    kubectl wait --namespace ingress-nginx --for=condition=ready pod \
+      --selector=app.kubernetes.io/component=controller --timeout=120s
+    ```
+  - **Prod**: k3s comes with Traefik pre-installed. For other clusters, install Traefik via Helm if needed.
 
 ## Deploy
 
-Run commands from the `infra/` directory.
+Run all commands from the `infra/` directory.
 
 ### Development
 
@@ -52,19 +45,81 @@ kubectl apply -k k8s/todoapp/overlays/dev
 kubectl apply -k k8s/components/overlays/dev
 ```
 
+Add this line to your `/etc/hosts`:
+
+```
+<cluster-ip> todoapp.test
+```
+
+Then open http://todoapp.test
+
 ### Production
 
-1. Edit the public IP in `k8s/components/overlays/prod/kustomization.yaml` (replace `YOUR_VPS_IP`).
-2. (Optional) Update image tags in `k8s/todoapp/overlays/prod/kustomization.yaml`.
+1. Edit the public IP in `k8s/components/overlays/prod/kustomization.yaml`:
+   - Replace `YOUR_VPS_IP` with your server's public IP.
+
+2. (Optional) Update image tags if you built new versions (edit the base deployments or create image overrides in the prod overlay).
+
 3. Deploy:
-   ```bash
-   kubectl apply -k k8s/todoapp/overlays/prod
-   kubectl apply -k k8s/components/overlays/prod
-   ```
+
+```bash
+kubectl apply -k infra/k8s/todoapp/overlays/prod
+kubectl apply -k infra/k8s/components/overlays/prod
+```
+
+Access the app at:
+
+```
+http://todoapp.<YOUR_VPS_IP>.nip.io
+```
 
 ## Tips
 
-- Deploy `todoapp` workloads before or together with the Ingress.
-- `nip.io` gives you a working hostname from any public IP with no DNS setup.
-- Base images use `imagePullPolicy: Always`.
-- For real production, add TLS with cert-manager and use a proper domain.
+- Apply `todoapp` workloads before or together with the Ingress components.
+- `nip.io` provides free DNS for any public IP (no extra configuration needed).
+- All base images use `imagePullPolicy: Always`.
+- For real production, add TLS using cert-manager + a real domain.
+- You can preview the rendered manifests with:
+  ```bash
+  kubectl kustomize k8s/todoapp/overlays/prod
+  ```
+
+## (Optional) Quick Cluster on a VPS
+
+If you need a simple single-node cluster:
+
+1. Install kubectl
+
+```bash
+curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+```
+
+2. Set the alias
+
+```bash
+cat >> ~/.bashrc << 'EOF'
+# Kubernetes aliases y autocompletado
+alias k=kubectl
+complete -o default -F __start_kubectl k
+source <(kubectl completion $(basename $SHELL))
+EOF
+```
+
+3. Recargamos la configuración
+
+```bash
+source ~/.bashrc
+```
+
+4. On a Debian/Ubuntu VPS install k3s
+
+```bash
+curl -sfL https://get.k3s.io | sh -
+mkdir -p ~/.kube
+sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+sudo chown $USER:$USER ~/.kube/config
+kubectl get nodes
+```
+
+Then follow the Production steps above. k3s includes Traefik by default.
