@@ -4,25 +4,48 @@ A small microservices-based ToDo application built as a learning project to prac
 
 ## The Application
 
-The system consists of three main services:
+The system consists of the following main services:
 
-| Service | Tech Stack                     | Responsibility              | Database |
-| ------- | ------------------------------ | --------------------------- | -------- |
-| auth    | Go + Gin + GORM + JWT          | User registration and login | MySQL    |
-| core    | Node.js + Express              | Tasks CRUD API              | MongoDB  |
-| web     | Vue 3 + Vite (served by Nginx) | Frontend UI                 | -        |
+| Service | Tech Stack                     | Responsibility                        | Database        |
+| ------- | ------------------------------ | ------------------------------------- | --------------- |
+| auth    | Go + Gin + GORM + JWT          | User registration and login           | MySQL           |
+| core    | Node.js + Express              | Tasks CRUD API (legacy/first version) | MongoDB         |
+| task    | Java + Spring Boot             | Tasks CRUD API (improved, optional)   | PostgreSQL / H2 |
+| web     | Vue 3 + Vite (served by Nginx) | Frontend UI                           | -               |
 
 An NGINX gateway (in the Docker Compose setup) or an Ingress (in Kubernetes) routes traffic:
 
 - `/api/auth` → auth service
-- `/api/tasks` → core service
+- `/api/tasks` → task service (by default) or core (legacy)
 - `/` → web frontend
+
+## Tasks API: Core vs Task (Optional Improved Version)
+
+The `/api/tasks` functionality has two implementations:
+
+- **`todoapp-core`** (original / first version):  
+  Built with Node.js + Express + MongoDB. This was the initial implementation of the tasks API.
+
+- **`todoapp-task`** (improved, **optional** version):  
+  Built with Java + Spring Boot + Spring Data JPA. It offers the same REST API (`/api/tasks`) but is considered the more modern and improved implementation.
+  - Supports in-memory H2 (development) or PostgreSQL (production-like).
+  - Includes actuator endpoints for health checks.
+  - Uses the same JWT authentication mechanism as `todoapp-auth` (must share the `JWT_SECRET`).
+
+**Important**:
+
+- Both services are now API-compatible. The frontend only uses `id` (we updated the legacy core to return `id` instead of Mongo's `_id`).
+- You can use either one (or switch between them).
+- In the Kubernetes manifests (`infra/k8s/`), the Ingress routes `/api/tasks` to the `task` service by default, and a `postgres` database is included for it.
+- The legacy `core` + `mongo` stack is still present if you prefer the original implementation.
+- The Docker Compose example in `infra/docker/` currently uses the legacy `core` service for tasks (with MongoDB).
+- See [todoapp-task/README.md](todoapp-task/README.md) for specific instructions on the Java service (endpoints, authentication, local run, etc.).
 
 ## Repository Contents
 
 This repository focuses on **deployment and infrastructure**:
 
-- `todoapp-auth/`, `todoapp-core/`, `todoapp-web/` — Source code of the services (for building images or local development)
+- `todoapp-auth/`, `todoapp-core/`, `todoapp-task/`, `todoapp-web/` — Source code of the services (for building images or local development)
 - `infra/k8s/` — Kubernetes manifests using Kustomize (dev + prod overlays)
 - `infra/docker/` — Docker Compose setup for running the full stack
 - `infra/terraform/` — Infrastructure as Code examples (e.g. DigitalOcean Droplet)
@@ -32,6 +55,7 @@ This repository focuses on **deployment and infrastructure**:
 >
 > - https://github.com/dalthonmh/todoapp-auth
 > - https://github.com/dalthonmh/todoapp-core
+> - https://github.com/dalthonmh/todoapp-task
 > - https://github.com/dalthonmh/todoapp-web
 
 ## Getting Started
@@ -109,7 +133,7 @@ kubectl apply -k infra/k8s/components/overlays/dev
 
 Terraform configurations for provisioning servers (e.g. DigitalOcean Droplets) are in `infra/terraform/`.
 
-See [infra/terraform/readme.md](infra/terraform/readme.md) for usage.
+See [infra/terraform/README.md](infra/terraform/README.md) for usage.
 
 ## Important Notes
 
@@ -117,7 +141,7 @@ See [infra/terraform/readme.md](infra/terraform/readme.md) for usage.
   - Database credentials and JWT secrets are hardcoded.
   - Docker Compose and Kubernetes examples use `hostPath` volumes (data is not durable).
 - For real environments you should introduce Kubernetes Secrets, proper PersistentVolumes, TLS (cert-manager), image versioning, and CI/CD.
-- The `todoapp-task/` directory contains an older Java/Spring version and is not part of the current active stack.
+- `todoapp-task/` is the improved Java/Spring Boot implementation of the tasks API (optional replacement for the tasks part of `todoapp-core`). It is actively used in the Kubernetes setup.
 
 ## Project Goals
 
