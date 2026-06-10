@@ -24,13 +24,13 @@ ArgoCD Applications point directly to these Kustomize overlay paths. ArgoCD nati
 
 ```bash
 kubectl create namespace argocd
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
 Access the ArgoCD UI (example with port-forward):
 
 ```bash
-kubectl port-forward svc/argocd-server -n argocd 8080:80
+kubectl port-forward  --address 0.0.0.0 svc/argocd-server -n argocd  8080:80
 ```
 
 Default admin password:
@@ -43,10 +43,10 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.pas
 
 When configuring ArgoCD Applications, paths are **relative to the repository root**:
 
-| Component   | Dev Path                              | Prod Path                              |
-|-------------|---------------------------------------|----------------------------------------|
-| todoapp     | `infra/k8s/todoapp/overlays/dev`      | `infra/k8s/todoapp/overlays/prod`      |
-| components  | `infra/k8s/components/overlays/dev`   | `infra/k8s/components/overlays/prod`   |
+| Component  | Dev Path                            | Prod Path                            |
+| ---------- | ----------------------------------- | ------------------------------------ |
+| todoapp    | `infra/k8s/todoapp/overlays/dev`    | `infra/k8s/todoapp/overlays/prod`    |
+| components | `infra/k8s/components/overlays/dev` | `infra/k8s/components/overlays/prod` |
 
 > Note: This differs from the `kubectl apply -k` commands in the main k8s README (which assume you are inside the `infra/` directory).
 

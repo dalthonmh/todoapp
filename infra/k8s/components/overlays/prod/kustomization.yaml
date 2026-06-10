@@ -34,4 +34,4 @@ patches:
         value: traefik
       - op: replace
         path: /spec/rules/0/host
-        value: todoapp.YOUR_VPS_IP.nip.io
+        value: todoapp.165.227.122.138.nip.io
