@@ -31,6 +31,7 @@ Access the ArgoCD UI (example with port-forward):
 
 ```bash
 kubectl port-forward  --address 0.0.0.0 svc/argocd-server -n argocd  8080:80
+kubectl port-forward svc/argocd-server -n argocd  8080:80
 ```
 
 Default admin password:

@@ -7,12 +7,14 @@ spec:
   description: Project for the TodoApp microservices and supporting components.
 
   # Allow deploying to the default namespace (current setup)
+  # Add more destinations (other clusters/namespaces) as needed
+  # - namespace: 'todoapp-*'
+  #   server: https://kubernetes.default.svc
   destinations:
     - namespace: default
       server: https://kubernetes.default.svc
-    # Add more destinations (other clusters/namespaces) as needed
-    # - namespace: 'todoapp-*'
-    #   server: https://kubernetes.default.svc
+    - namespace: argocd
+      server: https://kubernetes.default.svc
 
   # Source repositories allowed for this project
   sourceRepos:
@@ -21,18 +23,18 @@ spec:
 
   # Allow common cluster resources
   clusterResourceWhitelist:
-    - group: ''
+    - group: ""
       kind: Namespace
-    - group: 'networking.k8s.io'
+    - group: "networking.k8s.io"
       kind: IngressClass
 
   # Namespace-scoped resources we expect to manage
   namespaceResourceWhitelist:
-    - group: ''
+    - group: ""
       kind: ConfigMap
-    - group: ''
+    - group: ""
       kind: Secret
-    - group: ''
+    - group: ""
       kind: Service
     - group: apps
       kind: Deployment
