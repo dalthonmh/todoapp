@@ -40,6 +40,8 @@ spec:
       kind: Deployment
     - group: networking.k8s.io
       kind: Ingress
+    - group: argoproj.io
+      kind: Application
 
   # Roles (optional but recommended for teams)
   roles:
