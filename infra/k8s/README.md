@@ -84,7 +84,7 @@ http://todoapp.<YOUR_VPS_IP>.nip.io
   kubectl kustomize k8s/todoapp/overlays/prod
   ```
 
-## (Optional) Quick Cluster on a VPS
+## Quick Cluster on a VPS
 
 If you need a simple single-node cluster:
 
@@ -106,7 +106,7 @@ source <(kubectl completion $(basename $SHELL))
 EOF
 ```
 
-3. Recargamos la configuración
+3. Reload the configuration
 
 ```bash
 source ~/.bashrc
