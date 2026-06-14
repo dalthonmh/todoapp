@@ -1,0 +1,33 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: default
+
+resources:
+  - ../../base
+
+# Overlay STAGE: Quick testing environment using nip.io
+# - No TLS (HTTP only)
+# - Domain uses nip.io so no real DNS is required
+# - Good for fast iteration before promoting to real prod
+
+patches:
+  - target:
+      kind: Ingress
+      name: todoapp-ingress
+    patch: |-
+      # Traefik HTTP entrypoint only (no HTTPS in stage)
+      - op: add
+        path: /metadata/annotations
+        value:
+          traefik.ingress.kubernetes.io/router.entrypoints: "web"
+
+      - op: add
+        path: /spec/ingressClassName
+        value: traefik
+
+      # nip.io domain for easy access without DNS
+      - op: replace
+        path: /spec/rules/0/host
+        value: todoapp.159.203.120.126.nip.io
+

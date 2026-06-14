@@ -17,10 +17,13 @@ Kustomize-based deployment for the TodoApp microservices.
 
 ### Environments
 
-| Environment | Ingress | Hostname              | Typical Use           |
-| ----------- | ------- | --------------------- | --------------------- |
-| dev         | NGINX   | todoapp.test          | Local (kind/minikube) |
-| prod        | Traefik | `todoapp.<IP>.nip.io` | VPS / cloud           |
+| Environment | Ingress | Hostname                            | Typical Use                          |
+| ----------- | ------- | ----------------------------------- | ------------------------------------ |
+| dev         | NGINX   | todoapp.test                        | Local (kind/minikube)                |
+| stage       | Traefik | `todoapp.159.203.120.126.nip.io`    | Quick testing on VPS (HTTP only)     |
+| prod        | Traefik | `todoapp.store`                     | Real domain + TLS (cert-manager)     |
+
+> See [../STAGE.md](../STAGE.md) for details on the `stage` vs `prod` environments and how to deploy them with ArgoCD.
 
 ## Prerequisites
 

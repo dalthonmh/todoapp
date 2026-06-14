@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: todoapp-bootstrap-stage
+  namespace: argocd
+spec:
+  project: todoapp
+  source:
+    repoURL: https://github.com/dalthonmh/todoapp.git
+    targetRevision: HEAD
+    path: infra/argocd/applications/stage
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    # Manual by default for stage (safer when introducing real domain + TLS)
+    syncOptions:
+      - CreateNamespace=true
+  # After applying this bootstrap, ArgoCD will automatically create:
+  # - todoapp-stage
+  # - components-stage
+  #
+  # You can also add a cert-manager Application here later for full GitOps installation.

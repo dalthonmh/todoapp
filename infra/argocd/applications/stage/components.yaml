@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: components-stage
+  namespace: argocd
+  annotations:
+    # Higher wave: make sure the workloads (Services) exist before the Ingress + TLS
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  project: todoapp
+  source:
+    repoURL: https://github.com/dalthonmh/todoapp.git
+    targetRevision: HEAD
+    path: infra/k8s/components/overlays/stage
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=false
+      - PruneLast=true
+  # Note:
+  # This Application also deploys the ClusterIssuer (from cert-manager/stage).
+  # The actual cert-manager controller must be installed first (see STAGE.md).

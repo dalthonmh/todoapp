@@ -5,33 +5,43 @@ namespace: default
 
 resources:
   - ../../base
+  - ../../../cert-manager/prod   # ClusterIssuer for real domain TLS
 
-# Overlay PROD: uses Traefik as Ingress Controller
-# - Class: traefik
-# - Traefik-specific annotation for entrypoint "web" (HTTP)
-# - Host: uses the nip.io pattern to work with a VPS public IP
-#   without requiring real DNS.
-#
-# VPS INSTRUCTIONS:
-#   1. Replace "YOUR_VPS_IP" with your VPS public IP (e.g. 203.0.113.42)
-#   2. The resulting hostname will be: todoapp.203.0.113.42.nip.io
-#   3. nip.io automatically resolves that name to the given IP.
-#   4. Make sure Traefik is installed with its IngressClass "traefik".
-#   5. (Optional) If you have a real domain pointing to the VPS, replace the host
-#      with your domain (e.g. todoapp.yourdomain.com) and add TLS with cert-manager.
+# Overlay PROD: Real domain + HTTPS with cert-manager
+# - Domain: todoapp.store (must point to your Droplet IP)
+# - Controller: Traefik (k3s default)
+# - TLS: Let's Encrypt via cert-manager (HTTP-01)
+# - Entrypoints: web (HTTP) + websecure (HTTPS)
 
 patches:
   - target:
       kind: Ingress
       name: todoapp-ingress
     patch: |-
+      # Traefik entrypoints for both HTTP and HTTPS
       - op: add
         path: /metadata/annotations
         value:
-          traefik.ingress.kubernetes.io/router.entrypoints: "web"
+          traefik.ingress.kubernetes.io/router.entrypoints: "web,websecure"
+          cert-manager.io/cluster-issuer: "letsencrypt-prod"
+          # For testing without hitting rate limits, use staging:
+          # cert-manager.io/cluster-issuer: "letsencrypt-staging"
+
+      # Traefik ingress class
       - op: add
         path: /spec/ingressClassName
         value: traefik
+
+      # Real production domain
       - op: replace
         path: /spec/rules/0/host
-        value: todoapp.159.203.120.126.nip.io
+        value: todoapp.store
+
+      # TLS section - cert-manager will create and populate the secret
+      - op: add
+        path: /spec/tls
+        value:
+          - hosts:
+              - todoapp.store
+            secretName: todoapp-store-tls
+

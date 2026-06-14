@@ -87,7 +87,13 @@ From the root of the repository:
 kubectl apply -f infra/argocd/bootstrap/app-of-apps-dev.yaml
 ```
 
-**For Production:**
+**For Stage (quick testing - nip.io):**
+
+```bash
+kubectl apply -f infra/argocd/bootstrap/app-of-apps-stage.yaml
+```
+
+**For Production (real domain todoapp.store + TLS):**
 
 ```bash
 kubectl apply -f infra/argocd/bootstrap/app-of-apps-prod.yaml
@@ -96,7 +102,8 @@ kubectl apply -f infra/argocd/bootstrap/app-of-apps-prod.yaml
 After applying the bootstrap Application(s), ArgoCD will automatically create and manage the child Applications:
 
 - `todoapp-dev` + `components-dev`
-- or `todoapp-prod` + `components-prod`
+- `todoapp-stage` + `components-stage` (nip.io, HTTP only)
+- `todoapp-prod` + `components-prod` (real domain + HTTPS) — see `infra/STAGE.md`
 
 You can also create the bootstrap Application through the ArgoCD UI by pointing to the `bootstrap/` path.
 
