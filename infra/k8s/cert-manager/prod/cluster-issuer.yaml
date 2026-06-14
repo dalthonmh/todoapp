@@ -6,7 +6,7 @@ spec:
   acme:
     # Production Let's Encrypt (use this for real prod)
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: your-email@example.com   # <-- CHANGE THIS to a valid email
+    email: dalthonmh@gmail.com
     privateKeySecretRef:
       name: letsencrypt-prod
     solvers:
@@ -22,7 +22,7 @@ metadata:
 spec:
   acme:
     server: https://acme-staging-v02.api.letsencrypt.org/directory
-    email: your-email@example.com   # <-- CHANGE THIS
+    email: dalthonmh@gmail.com
     privateKeySecretRef:
       name: letsencrypt-staging
     solvers:
