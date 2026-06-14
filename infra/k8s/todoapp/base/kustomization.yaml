@@ -3,12 +3,12 @@ kind: Kustomization
 
 resources:
   - auth
-  - core
+  # - core
+  # - mongo
+  - mysql
+  - postgres
   - task
   - web
-  - mysql
-  - mongo
-  - postgres
 
 labels:
   - pairs:
