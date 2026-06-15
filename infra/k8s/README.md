@@ -17,112 +17,211 @@ Kustomize-based deployment for the TodoApp microservices.
 
 ### Environments
 
-| Environment | Ingress | Hostname                            | Typical Use                          |
-| ----------- | ------- | ----------------------------------- | ------------------------------------ |
-| dev         | NGINX   | todoapp.test                        | Local (kind/minikube)                |
-| stage       | Traefik | `todoapp.159.203.120.126.nip.io`    | Quick testing on VPS (HTTP only)     |
-| prod        | Traefik | `todoapp.store`                     | Real domain + TLS (cert-manager)     |
+| Environment | Ingress | Hostname                              | TLS     | Typical Use                          |
+| ----------- | ------- | ------------------------------------- | ------- | ------------------------------------ |
+| dev         | NGINX   | `todoapp.test`                        | No      | Local (kind / minikube)              |
+| stage       | Traefik | `todoapp.<IP>.nip.io` (see overlay)   | No      | Quick testing on VPS (HTTP only)     |
+| prod        | Traefik | `todoapp.store`                       | Yes     | Real domain + TLS (cert-manager)     |
 
-> See [../STAGE.md](../STAGE.md) for details on the `stage` vs `prod` environments and how to deploy them with ArgoCD.
+> The exact `stage` hostname is defined in `infra/k8s/components/overlays/stage/kustomization.yaml`.
 
 ## Prerequisites
 
 - A running Kubernetes cluster with `kubectl` configured.
-- Ingress controller:
-  - **Dev**: Install NGINX Ingress (example for kind):
+- **Ingress controller** (choose according to your environment):
+  - **dev**: NGINX Ingress Controller (example for kind):
     ```bash
     kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
     kubectl wait --namespace ingress-nginx --for=condition=ready pod \
       --selector=app.kubernetes.io/component=controller --timeout=120s
     ```
-  - **Prod**: k3s comes with Traefik pre-installed. For other clusters, install Traefik via Helm if needed.
+  - **stage / prod**: Traefik (comes pre-installed with k3s). For other clusters install via Helm if needed.
+- **Production only**:
+  - `todoapp.store` must have an A record pointing to your server's public IP.
+  - Firewall rules allowing inbound TCP 80 and 443.
+  - cert-manager installed (see Production section).
 
 ## Deploy
 
-Run all commands from the `infra/` directory.
+All `kubectl apply -k` examples below are written to be run from the **repository root**.
 
-### Development
-
-```bash
-kubectl apply -k k8s/todoapp/overlays/dev
-kubectl apply -k k8s/components/overlays/dev
-```
-
-Add this line to your `/etc/hosts`:
-
-```
-<cluster-ip> todoapp.test
-```
-
-Then open http://todoapp.test
-
-### Production
-
-1. Edit the public IP in `k8s/components/overlays/prod/kustomization.yaml`:
-   - Replace `YOUR_VPS_IP` with your server's public IP.
-
-2. (Optional) Update image tags if you built new versions (edit the base deployments or create image overrides in the prod overlay).
-
-3. Deploy:
+### Development (dev)
 
 ```bash
+kubectl apply -k infra/k8s/todoapp/overlays/dev
+kubectl apply -k infra/k8s/components/overlays/dev
+```
+
+Add the hostname to your local machine:
+
+```bash
+# For kind/minikube the ingress usually runs on localhost
+echo "127.0.0.1 todoapp.test" | sudo tee -a /etc/hosts
+```
+
+Open: http://todoapp.test
+
+### Stage (quick testing / pre-prod)
+
+Stage uses a `nip.io` hostname so you get a working DNS name for any public IP without touching real DNS. It is HTTP only (no TLS) and is ideal for fast iteration on a VPS.
+
+```bash
+kubectl apply -k infra/k8s/todoapp/overlays/stage
+kubectl apply -k infra/k8s/components/overlays/stage
+```
+
+Access the app at the hostname defined in the stage overlay, e.g.:
+
+```
+http://todoapp.159.203.120.126.nip.io
+```
+
+> Make sure Traefik is the default ingress controller (default on k3s).
+
+**Using ArgoCD (recommended for remote environments)**
+
+```bash
+kubectl apply -f infra/argocd/bootstrap/app-of-apps-stage.yaml
+```
+
+See [infra/argocd/README.md](../argocd/README.md) and [infra/README.md](../README.md) for the full GitOps + VPS workflow.
+
+### Production (real domain + TLS)
+
+Production deploys to the real domain `todoapp.store` with automatic HTTPS via Let's Encrypt + cert-manager.
+
+#### One-time setup
+
+1. **Install cert-manager**:
+
+   ```bash
+   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.3/cert-manager.yaml
+   kubectl wait --namespace cert-manager --for=condition=ready pod \
+     --selector=app.kubernetes.io/component=controller --timeout=120s
+   ```
+
+2. (Recommended while testing) Temporarily use the staging issuer to avoid Let's Encrypt rate limits:
+   - Edit `infra/k8s/components/overlays/prod/kustomization.yaml`
+   - Change `letsencrypt-prod` → `letsencrypt-staging` in the annotation.
+   - Later switch back to `letsencrypt-prod` for real certificates.
+
+3. Ensure your DNS is ready:
+   - Create an **A record** for `todoapp.store` → your VPS public IP.
+   - Open ports 80 and 443 in your cloud firewall / security group.
+
+#### Deploy
+
+```bash
+# 1. Workloads first (recommended)
 kubectl apply -k infra/k8s/todoapp/overlays/prod
+
+# 2. Ingress + TLS configuration (includes ClusterIssuer)
 kubectl apply -k infra/k8s/components/overlays/prod
 ```
 
-Access the app at:
+You can also run both commands together.
 
+Access: https://todoapp.store
+
+> It can take 1–3 minutes for the certificate to be issued and become Ready.  
+> Check progress with:
+> ```bash
+> kubectl get certificate
+> kubectl describe certificate todoapp-store-tls
+> ```
+
+**Using ArgoCD (recommended)**
+
+```bash
+# One-time: install cert-manager as shown above (or via ArgoCD Helm chart)
+
+kubectl apply -f infra/argocd/bootstrap/app-of-apps-prod.yaml
 ```
-http://todoapp.<YOUR_VPS_IP>.nip.io
+
+After the bootstrap Application syncs, ArgoCD will create:
+- `todoapp-prod`
+- `components-prod`
+
+Monitor with `argocd app get todoapp-bootstrap-prod -w` or the ArgoCD UI.
+
+See [infra/README.md](../README.md) for the practical VPS deployment workflow (stage vs prod).
+
+## Preview Rendered Manifests
+
+```bash
+# Development
+kubectl kustomize infra/k8s/todoapp/overlays/dev
+kubectl kustomize infra/k8s/components/overlays/dev
+
+# Stage
+kubectl kustomize infra/k8s/todoapp/overlays/stage
+kubectl kustomize infra/k8s/components/overlays/stage
+
+# Production
+kubectl kustomize infra/k8s/todoapp/overlays/prod
+kubectl kustomize infra/k8s/components/overlays/prod
 ```
 
 ## Tips
 
-- Apply `todoapp` workloads before or together with the Ingress components.
-- `nip.io` provides free DNS for any public IP (no extra configuration needed).
+- Apply the `todoapp` workloads **before or together with** the `components` (Ingress) overlays. The components overlay has a higher sync wave when using ArgoCD.
 - All base images use `imagePullPolicy: Always`.
-- For real production, add TLS using cert-manager + a real domain.
-- You can preview the rendered manifests with:
-  ```bash
-  kubectl kustomize k8s/todoapp/overlays/prod
-  ```
+- `nip.io` gives you free wildcard DNS for any public IP (very convenient for stage).
+- For production, prefer the real domain + cert-manager over nip.io.
+- You can have **stage and prod** running side-by-side on the same cluster (they use different hostnames).
+- Common next improvements:
+  - Pin image tags per environment instead of `Always`.
+  - Add resource requests/limits, HPA, PodDisruptionBudgets.
+  - Use sealed-secrets or external-secrets for sensitive values.
+  - Separate namespaces per environment.
 
-## Quick Cluster on a VPS
+## Quick Cluster on a VPS (k3s)
 
-If you need a simple single-node cluster:
+Useful for both **stage** and **prod**.
 
-1. Install kubectl
+1. Install kubectl (on the VPS):
+
+   ```bash
+   curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
+   sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+   ```
+
+2. (Optional) Add convenient aliases:
+
+   ```bash
+   cat >> ~/.bashrc << 'EOF'
+   alias k=kubectl
+   complete -o default -F __start_kubectl k
+   source <(kubectl completion $(basename $SHELL))
+   EOF
+   source ~/.bashrc
+   ```
+
+3. Install k3s (includes Traefik by default):
+
+   ```bash
+   curl -sfL https://get.k3s.io | sh -
+   mkdir -p ~/.kube
+   sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+   sudo chown $USER:$USER ~/.kube/config
+   kubectl get nodes
+   ```
+
+4. Then choose:
+
+   - For fast testing → follow the **Stage** steps above.
+   - For the real domain → follow the **Production** steps (DNS + cert-manager required).
+
+## Related Documentation
+
+- [infra/README.md](../README.md) — Practical step-by-step guide for k3s + ArgoCD on a VPS (covers deploying stage and prod)
+- [infra/argocd/README.md](../argocd/README.md) — Detailed GitOps with ArgoCD (App of Apps, manual applications, sync policies, etc.)
+- Root [README.md](../../README.md) — Project overview and high-level navigation
+
+For troubleshooting ArgoCD applications:
 
 ```bash
-curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+argocd app list
+argocd app sync todoapp-stage
+argocd app logs components-prod -c argocd-application-controller
 ```
-
-2. Set the alias
-
-```bash
-cat >> ~/.bashrc << 'EOF'
-# Kubernetes aliases y autocompletado
-alias k=kubectl
-complete -o default -F __start_kubectl k
-source <(kubectl completion $(basename $SHELL))
-EOF
-```
-
-3. Reload the configuration
-
-```bash
-source ~/.bashrc
-```
-
-4. On a Debian/Ubuntu VPS install k3s
-
-```bash
-curl -sfL https://get.k3s.io | sh -
-mkdir -p ~/.kube
-sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
-sudo chown $USER:$USER ~/.kube/config
-kubectl get nodes
-```
-
-Then follow the Production steps above. k3s includes Traefik by default.

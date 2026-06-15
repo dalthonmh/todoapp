@@ -73,8 +73,9 @@ ssh-keygen -t ed25519 -C "digitalocean-todoapp" -f ~/.ssh/id_dalthonmh_digitaloc
 ```
 
 This will create:
+
 - Private key: `~/.ssh/id_dalthonmh_digitalocean`
-- Public key:  `~/.ssh/id_dalthonmh_digitalocean.pub`
+- Public key: `~/.ssh/id_dalthonmh_digitalocean.pub`
 
 #### Option B: Use your existing key
 
@@ -128,36 +129,7 @@ Use the private key you generated:
 ssh -i ~/.ssh/id_dalthonmh_digitalocean root@<YOUR_DROPLET_IP>
 ```
 
-Example:
-
-```bash
-ssh -i ~/.ssh/id_dalthonmh_digitalocean root@138.197.25.128
-```
-
 Once connected, you can install k3s or any other software you need.
-
----
-
-## Useful Commands
-
-| Command                    | Description                          |
-|---------------------------|--------------------------------------|
-| `terraform plan`          | Preview changes without applying     |
-| `terraform apply`         | Create or update resources           |
-| `terraform output`        | Show output values (like the IP)     |
-| `terraform destroy`       | **Delete all resources** (careful!)  |
-
----
-
-## Important Notes
-
-- **Cost**: Droplets are billed hourly. The `s-4vcpu-8gb` size is relatively expensive for testing — consider using a smaller size (e.g. `s-1vcpu-2gb`) for development.
-- **SSH Key Name**: The SSH key filename is currently hardcoded in `main.tf`. Update it if you use a different key name.
-- **Security**: Never commit your `TF_VAR_do_token` or private SSH keys to git.
-- **After creation**: This Terraform only creates the virtual machine. You still need to install Kubernetes (k3s), Docker, or any other software manually on the Droplet.
-- **Region & Size**: You can change `region` and `size` in `main.tf` before running `terraform apply`.
-
----
 
 ## Cleanup
 
@@ -168,18 +140,5 @@ terraform destroy
 ```
 
 Confirm with `yes`. This will permanently delete the Droplet.
-
----
-
-## Next Steps (Typical Workflow)
-
-1. Provision the Droplet using this Terraform.
-2. SSH into the server.
-3. Install k3s:
-   ```bash
-   curl -sfL https://get.k3s.io | sh -
-   ```
-4. Copy the kubeconfig and deploy the TodoApp using the manifests in `infra/k8s/`.
-5. (Optional) Point a domain or use nip.io to access your application publicly.
 
 For detailed Kubernetes + TodoApp deployment instructions, see [infra/k8s/README.md](../k8s/README.md).

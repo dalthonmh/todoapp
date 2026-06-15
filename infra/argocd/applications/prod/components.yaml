@@ -18,5 +18,5 @@ spec:
     syncOptions:
       - CreateNamespace=false
       - PruneLast=true
-  # Note: Before this works correctly you must replace YOUR_VPS_IP
-  # in infra/k8s/components/overlays/prod/kustomization.yaml
+  # Note: prod overlay uses the real domain todoapp.store + cert-manager.
+  # Make sure DNS (A record for todoapp.store) and cert-manager are ready before syncing.

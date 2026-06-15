@@ -20,5 +20,5 @@ spec:
       - CreateNamespace=false
       - PruneLast=true
   # Note:
-  # This Application also deploys the ClusterIssuer (from cert-manager/stage).
-  # The actual cert-manager controller must be installed first (see STAGE.md).
+  # Stage uses plain HTTP (no TLS). The stage overlay does not include cert-manager resources.
+  # If you want to install cert-manager via GitOps anyway, see applications/stage/cert-manager.yaml.

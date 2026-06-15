@@ -46,7 +46,7 @@ The `/api/tasks` functionality has two implementations:
 This repository focuses on **deployment and infrastructure**:
 
 - `todoapp-auth/`, `todoapp-core/`, `todoapp-task/`, `todoapp-web/` — Source code of the services (for building images or local development)
-- `infra/k8s/` — Kubernetes manifests using Kustomize (dev + prod overlays)
+- `infra/k8s/` — Kubernetes manifests using Kustomize (dev, stage, and prod overlays)
 - `infra/docker/` — Docker Compose setup for running the full stack
 - `infra/terraform/` — Infrastructure as Code examples (e.g. DigitalOcean Droplet)
 - `infra/sample/` — Example database manifests
@@ -151,6 +151,6 @@ The main goal of this repository is to provide a realistic but manageable exampl
 - Kubernetes with Kustomize
 - Docker Compose for local and server environments
 - Infrastructure as Code with Terraform
-- Different environments (dev vs prod)
+- Different environments (dev, stage, prod)
 
 Feel free to explore, break things, and improve the manifests!
