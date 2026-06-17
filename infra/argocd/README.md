@@ -111,6 +111,12 @@ You can also create the bootstrap Application through the ArgoCD UI by pointing 
 ## Useful ArgoCD Commands
 
 ```bash
+# Login
+argocd login localhost:8080 \
+  --username admin \
+  --password password \
+  --insecure
+
 # List applications
 argocd app list
 

@@ -217,7 +217,9 @@ k get all                 # if alias is set
 kubectl get applications -n argocd
 
 # Watch a specific app
-argocd app get todoapp-stage -w
+# Login
+argocd login localhost:8080 --username admin --password password --insecure
+argocd app get todoapp-stage
 argocd app sync todoapp-stage
 ```
 
