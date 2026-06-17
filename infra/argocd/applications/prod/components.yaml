@@ -19,4 +19,5 @@ spec:
       - CreateNamespace=false
       - PruneLast=true
   # Note: prod overlay uses the real domain todoapp.store + cert-manager.
-  # Make sure DNS (A record for todoapp.store) and cert-manager are ready before syncing.
+  # Make sure DNS (A record for todoapp.store) and cert-manager + ClusterIssuers are ready before syncing.
+  # The overlay deploys both the Ingress and the letsencrypt ClusterIssuers.
