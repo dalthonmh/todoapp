@@ -53,7 +53,6 @@ ssh -i ~/.ssh/id_dalthonmh_digitalocean root@<VPS_IP>
 ```bash
 apt update && apt install git -y
 git clone https://github.com/dalthonmh/todoapp
-cd todoapp
 ```
 
 ## 4. Install k3s + kubectl
@@ -123,6 +122,7 @@ Open in your browser: `http://<VPS_IP>:8080`
 ## 7. Create the ArgoCD Project (recommended once)
 
 ```bash
+cd todoapp
 kubectl apply -f infra/argocd/projects/todoapp-project.yaml
 ```
 
@@ -217,10 +217,17 @@ k get all                 # if alias is set
 kubectl get applications -n argocd
 
 # Watch a specific app
+curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+rm argocd-linux-amd64
+
+# Open port
+kubectl port-forward --address 0.0.0.0 svc/argocd-server -n argocd 8080:80
 # Login
 argocd login localhost:8080 --username admin --password password --insecure
-argocd app get todoapp-stage
-argocd app sync todoapp-stage
+argocd app list
+argocd app get argocd/todoapp-bootstrap-prod
+argocd app sync argocd/todoapp-bootstrap-prod
 ```
 
 From your laptop you can also use `kubectl` against the cluster by copying the kubeconfig, or just SSH + port-forward ArgoCD.
